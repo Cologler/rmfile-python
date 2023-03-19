@@ -1,2 +1,3 @@
-# rmfile-python
- Remove files based on pattern
+# rmfile
+
+Remove files based on pattern
