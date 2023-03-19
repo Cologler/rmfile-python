@@ -13,6 +13,9 @@ xlgcid = "^0.1.1"
 atomicwrites = "^1.4.1"
 Send2Trash = "^1.8.0"
 
+[tool.poetry.scripts]
+rmfile = 'rmfile.core:app'
+
 
 [build-system]
 requires = ["poetry-core"]
