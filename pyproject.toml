@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "rmfile"
+version = "0.1.0"
+description = ""
+authors = ["Cologler <skyoflw@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+typer = {extras = ["all"], version = "^0.7.0"}
+xlgcid = "^0.1.1"
+atomicwrites = "^1.4.1"
+Send2Trash = "^1.8.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
