@@ -5,19 +5,20 @@
 # 
 # ----------
 
-import os
-import io
 import abc
-import typing
-import pathlib
 import hashlib
+import io
+import os
+import pathlib
+import typing
 from contextlib import suppress
 
-import typer
-import rich
 import atomicwrites
-import xlgcid
+import rich
 import send2trash
+import typer
+import xlgcid
+from xdg_base_dirs import xdg_config_home
 
 
 class TestContext:
@@ -187,6 +188,7 @@ app = typer.Typer()
 
 @app.command()
 def main(
+        ctx: typer.Context,
         location: str = typer.Argument(..., help='The dir or file to remove.'),
         name    : str = typer.Option(None, help="Load name patterns from file"),
         iname   : str = typer.Option(None, help="Same as --name, but case-insensitive"),
@@ -214,16 +216,28 @@ def main(
             return
         test_sets.append(set_type(value, lines))
 
-    load_from(name, NameTestSet, True)
-    load_from(iname, INameTestSet, True)
-    load_from(sha1, Sha1TestSet, True)
-    load_from(gcid, GcidTestSet, True)
+    def load_from_dir(cfg_dir: str):
+        typer.echo(f'Loading patterns from "{cfg_dir}"')
+        load_from(os.path.join(cfg_dir, 'name.txt'), NameTestSet, False)
+        load_from(os.path.join(cfg_dir, 'iname.txt'), INameTestSet, False)
+        load_from(os.path.join(cfg_dir, 'sha1.txt'), Sha1TestSet, False)
+        load_from(os.path.join(cfg_dir, 'gcid.txt'),  GcidTestSet, False)
 
-    if from_dir:
-        load_from(os.path.join(from_dir, 'name.txt'), NameTestSet, False)
-        load_from(os.path.join(from_dir, 'iname.txt'), INameTestSet, False)
-        load_from(os.path.join(from_dir, 'sha1.txt'), Sha1TestSet, False)
-        load_from(os.path.join(from_dir, 'gcid.txt'),  GcidTestSet, False)
+    config_home = xdg_config_home() / 'rmfile'
+
+    if any([name, iname, sha1, gcid, from_dir]):
+        load_from(name, NameTestSet, True)
+        load_from(iname, INameTestSet, True)
+        load_from(sha1, Sha1TestSet, True)
+        load_from(gcid, GcidTestSet, True)
+
+        if from_dir:
+            if not os.path.isdir(from_dir):
+                ctx.fail(f'"{from_dir}" is not a dir.')
+            load_from_dir(from_dir)
+
+    elif config_home.is_dir():
+        load_from_dir(str(config_home))
 
     if not test_sets:
         return typer.echo('No pattern input.', err=True)
